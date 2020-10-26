@@ -6,17 +6,17 @@ import numpy as np
 
 #Create model by using sequential structure
 model = Sequential()
-model.add(Dense(5, input_dim=5, activation='tanh'))
-model.add(Dense(5, activation='tanh'))
+model.add(Dense(10, input_dim=5, activation='tanh'))
+model.add(Dense(10, activation='tanh'))
 model.add(Dense(3, activation='softmax'))
 
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
-              metrics=['accuracy'])
+              metrics=['acc'])
 
 model.summary()
 
-#Read data from file
+#Read data from file (download at https://github.com/neokarn/computer_vision/blob/master/data.csv)
 data = np.asarray([[float(num) for num in line.split(',')] for line in open('data.csv')])
 
 #Train Model
@@ -34,4 +34,5 @@ y_test = data[120:,5]
 y_pred = model.predict(x_test)
 y_pred = np.argmax(y_pred,axis = -1)
 cm = confusion_matrix(y_test, y_pred)
+print("Confusion Matrix")
 print(cm)

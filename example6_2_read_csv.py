@@ -6,24 +6,24 @@ import numpy as np
 
 #Create model
 input = Input(shape=(5,)) #5 Features
-hidden1 = Dense(5, activation='tanh')(input)
-hidden2 = Dense(5, activation='tanh')(hidden1)
+hidden1 = Dense(10, activation='tanh')(input)
+hidden2 = Dense(10, activation='tanh')(hidden1)
 output = Dense(3, activation='softmax')(hidden2) #Classification (3 classes)
 model = Model(inputs=input, outputs=output)
 
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
-              metrics=['accuracy'])
+              metrics=['acc'])
 
 model.summary()
 
-#Read data from file
+#Read data from file (download at https://github.com/neokarn/computer_vision/blob/master/data.csv)
 data = np.asarray([[float(num) for num in line.split(',')] for line in open('data.csv')])
 print('---------------- DATA -----------------------------------------')
 print(data)
 
 #Train Model
-x_train = data[0:120,0:5] # First 80 samples for training
+x_train = data[0:120,0:5] # First 120 samples for training
 y_train = data[0:120,5]
 
 print('---------------- x_train -----------------------------------------')
@@ -35,7 +35,7 @@ y_train = to_categorical(y_train)
 print('---------- y_train after to_categorical()----------------------------------')
 print(y_train) #one hot vectors
 
-model.fit(x_train, y_train, epochs=100, batch_size=5)
+model.fit(x_train, y_train, epochs=100, batch_size=5, verbose = 0)
 
 
 #Test Model

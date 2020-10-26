@@ -3,8 +3,9 @@ from keras.layers import Dense, Flatten, Input
 from keras.layers import Conv2D, MaxPool2D
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint
+from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 IM_SIZE = 64
 
@@ -21,25 +22,27 @@ model = Model(inputs=input, outputs=output)
 
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
-              metrics=['accuracy'])
+              metrics=['acc'])
 
 model.summary()
 
 
-#Create generator
+#Create generator (download dataset form https://drive.google.com/file/d/1Re4ededUgebu-vjVjHqjF9efC4xMfEih/view?usp=sharing)
 datagen = ImageDataGenerator(rescale=1./255)
 
 train_generator = datagen.flow_from_directory(
     'animalfaces/train',
+    shuffle=True,
     target_size=(IM_SIZE,IM_SIZE),
-    batch_size=15,
+    batch_size=50,
     color_mode = 'rgb',
     class_mode='categorical')
 
 validation_generator = datagen.flow_from_directory(
     'animalfaces/validation',
+    shuffle=False,
     target_size=(IM_SIZE,IM_SIZE),
-    batch_size=15,
+    batch_size=50,
     color_mode='rgb',
     class_mode='categorical')
 
@@ -47,9 +50,10 @@ test_generator = datagen.flow_from_directory(
     'animalfaces/test',
     shuffle=False,
     target_size=(IM_SIZE,IM_SIZE),
-    batch_size=15,
+    batch_size=50,
     color_mode='rgb',
     class_mode='categorical')
+
 
 
 #Train Model
@@ -66,7 +70,7 @@ h = model.fit_generator(
 plt.plot(h.history['acc'])
 plt.plot(h.history['val_acc'])
 plt.legend(['train', 'val'])
-plt.show()
+
 
 
 #Test Model
@@ -74,7 +78,25 @@ model = load_model('animalfaces.h5')
 score = model.evaluate_generator(
     test_generator,
     steps=len(test_generator))
-print(score)
+print('score (cross_entropy, accuracy):\n',score)
 
 
+test_generator.reset()
+predict = model.predict_generator(
+    test_generator,
+    steps=len(test_generator),
+    workers = 1,
+    use_multiprocessing=False)
+print('confidence:\n', predict)
 
+predict_class_idx = np.argmax(predict,axis = -1)
+print('predicted class index:\n', predict_class_idx)
+
+mapping = dict((v,k) for k,v in test_generator.class_indices.items())
+predict_class_name = [mapping[x] for x in predict_class_idx]
+print('predicted class name:\n', predict_class_name)
+
+cm = confusion_matrix(test_generator.classes, np.argmax(predict,axis = -1))
+print("Confusion Matrix:\n",cm)
+
+plt.show()
